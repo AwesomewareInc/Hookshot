@@ -3,6 +3,7 @@ package net.ioixd.hookshot;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -10,6 +11,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.Damageable;
@@ -19,6 +21,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -170,9 +173,20 @@ public class HookshotListener implements Listener {
                 ItemStack data = new ItemStack(Material.AIR);
                 player.getInventory().setItemInOffHand(data);
             } else {
-                dmg.setDamage(dmgLevel+16);
-                offhand.setItemMeta(meta);
-                player.getInventory().setItemInOffHand(offhand);
+                // if the flint and steel has unbreakable do  not continue.
+                if(!meta.isUnbreakable()) {
+                    // calculate the damage points to add based on the item's "unbreaking" enchantment
+                    int level = 0;
+                    try {
+                        level = meta.getEnchants().get(Enchantment.DURABILITY);
+                    } catch(NullPointerException ex) {
+                        // ignore it. just keep the level at 0.
+                    }
+                    dmg.setDamage(dmgLevel+(16-(level*5)));
+                    offhand.setItemMeta(meta);
+                    player.getInventory().setItemInOffHand(offhand);
+                }
+
 
             }
 
@@ -218,11 +232,13 @@ public class HookshotListener implements Listener {
                     // special exceptions for projectiles because throwing against those sounds funny
                     for(Entity entity : nearbyEntities) {
                         if(entity instanceof Monster || entity instanceof Projectile) {
-                            // only activate if the tnt has been primed for a quarter second
-                            if(tnt.getFuseTicks() <= 1000000-10) {
-                                tnt.setFuseTicks(-1000);
-                                return;
+                            if(entity instanceof Player) {
+                                if(((Player)entity).getDisplayName() == player.getDisplayName()) {
+                                    return;
+                                }
                             }
+                            tnt.setFuseTicks(-1000);
+                            return;
                         }
                     }
                 }
@@ -233,10 +249,8 @@ public class HookshotListener implements Listener {
                     // if at least one of the entities is a mob (players don't count)
                     for(Entity entity : nearbyEntities) {
                         if(entity instanceof Flying || entity instanceof Wither) {
-                            if(tnt.getFuseTicks() <= 1000000-10) {
-                                tnt.setFuseTicks(-1000);
-                                return;
-                            }
+                            tnt.setFuseTicks(-1000);
+                            return;
                         }
                     }
                 }
