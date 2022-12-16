@@ -231,7 +231,7 @@ public class HookshotListener implements Listener {
                     // if at least one of the entities is a mob (players don't count)
                     // special exceptions for projectiles because throwing against those sounds funny
                     for(Entity entity : nearbyEntities) {
-                        if(entity instanceof Monster || entity instanceof Projectile) {
+                        if(entity instanceof Monster || entity instanceof Animals ||entity instanceof Projectile) {
                             if(entity instanceof Player) {
                                 if(((Player)entity).getDisplayName() == player.getDisplayName()) {
                                     return;
