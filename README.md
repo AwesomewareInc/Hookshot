@@ -1,3 +1,3 @@
-## Mastodwarf
+## Hookshot
 
-Lore-specific plugin that adds a Mastodon viewer to a server. Does not currently function correctly.
+Plugin that makes certain blocks throwable and (soon) adds a working Hookshot
